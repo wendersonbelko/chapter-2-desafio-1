@@ -29,16 +29,30 @@ export function Home() {
   const [data, setData] = useState<LoginListDataProps>([]);
 
   async function loadData() {
+    // AsyncStorage.removeItem('@savepass:logins');
     const dataKey = '@savepass:logins';
-    // Get asyncStorage data, use setSearchListData and setData
+    const response = await AsyncStorage.getItem(dataKey);
+    if (response) {
+      const allPass = JSON.parse(response);
+      setSearchListData(allPass);
+      setData(allPass);
+    }
   }
 
   function handleFilterLoginData() {
-    // Filter results inside data, save with setSearchListData
+    const filteredData = searchListData.filter(data => {
+      if(data.service_name.includes(searchText)) {
+        return data;
+      }
+    })
+
+    console.log(filteredData)
+
+    setSearchListData(filteredData)
   }
 
   function handleChangeInputText(text: string) {
-    // Update searchText value
+    setSearchText(text);
   }
 
   useFocusEffect(useCallback(() => {
@@ -67,8 +81,8 @@ export function Home() {
         <Metadata>
           <Title>Suas senhas</Title>
           <TotalPassCount>
-            {searchListData.length
-              ? `${`${searchListData.length}`.padStart(2, '0')} ao total`
+            {searchListData?.length
+              ? `${`${searchListData?.length}`.padStart(2, '0')} ao total`
               : 'Nada a ser exibido'
             }
           </TotalPassCount>
@@ -77,11 +91,11 @@ export function Home() {
         <LoginList
           keyExtractor={(item) => item.id}
           data={searchListData}
-          renderItem={({ item: loginData }) => {
+          renderItem={(loginData) => {
             return <LoginDataItem
-              service_name={loginData.service_name}
-              email={loginData.email}
-              password={loginData.password}
+              service_name={loginData.item.service_name}
+              email={loginData.item.email}
+              password={loginData.item.password}
             />
           }}
         />
